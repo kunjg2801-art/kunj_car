@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>3D Cricket Bowler vs Batsman</title>
+<style>
+body { margin:0; overflow:hidden; background:skyblue; }
+#score { position:absolute; top:10px; left:20px; color:white; font-size:24px; }
+</style>
+</head>
+<body>
+
+<div id="score">Score: 0</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+let scene = new THREE.Scene();
+let camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+let renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+let score = 0;
+let scoreDiv = document.getElementById("score");
+
+// Light
+let light = new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
+
+// Stadium ground
+let groundGeo = new THREE.CircleGeometry(40,64);
+let groundMat = new THREE.MeshLambertMaterial({color:0x228B22});
+let ground = new THREE.Mesh(groundGeo,groundMat);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+// Pitch
+let pitchGeo = new THREE.BoxGeometry(4,0.1,30);
+let pitchMat = new THREE.MeshLambertMaterial({color:0xd2b48c});
+let pitch = new THREE.Mesh(pitchGeo,pitchMat);
+pitch.position.y = 0.05;
+scene.add(pitch);
+
+// Bowler (simple body)
+let bowlerGeo = new THREE.BoxGeometry(1,4,1);
+let bowlerMat = new THREE.MeshLambertMaterial({color:0x0000ff});
+let bowler = new THREE.Mesh(bowlerGeo,bowlerMat);
+bowler.position.set(0,2,-25);
+scene.add(bowler);
+
+// Batsman (body)
+let batsmanGeo = new THREE.BoxGeometry(1,4,1);
+let batsmanMat = new THREE.MeshLambertMaterial({color:0xff0000});
+let batsman = new THREE.Mesh(batsmanGeo,batsmanMat);
+batsman.position.set(0,2,8);
+scene.add(batsman);
+
+// Bat
+let batGeo = new THREE.BoxGeometry(0.3,3,0.3);
+let batMat = new THREE.MeshLambertMaterial({color:0x8B4513});
+let bat = new THREE.Mesh(batGeo,batMat);
+bat.position.set(1,3,8);
+scene.add(bat);
+
+// Ball
+let ballGeo = new THREE.SphereGeometry(0.4,32,32);
+let ballMat = new THREE.MeshLambertMaterial({color:0xffffff});
+let ball = new THREE.Mesh(ballGeo,ballMat);
+ball.position.set(0,1,-23);
+scene.add(ball);
+
+camera.position.set(0,12,25);
+camera.lookAt(0,0,0);
+
+let ballSpeed = 0.6;
+let swing = false;
+
+document.addEventListener("click",function(){
+    swing = true;
+    bat.rotation.z = -1;
+    setTimeout(()=>{
+        swing = false;
+        bat.rotation.z = 0;
+    },200);
+});
+
+function animate(){
+    requestAnimationFrame(animate);
+
+    // Ball movement
+    ball.position.z += ballSpeed;
+
+    if(ball.position.z > 10){
+        ball.position.z = -23;
+        ball.position.x = (Math.random()*4)-2;
+    }
+
+    // Hit detection
+    if(swing &&
+       Math.abs(ball.position.z - bat.position.z) < 1 &&
+       Math.abs(ball.position.x - bat.position.x) < 1){
+
+        score += 4;
+        scoreDiv.innerHTML = "Score: " + score;
+        ball.position.z = -23;
+    }
+
+    renderer.render(scene,camera);
+}
+
+animate();
+</script>
+
+</body>
+</html>
